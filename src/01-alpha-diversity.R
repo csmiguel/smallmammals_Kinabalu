@@ -75,9 +75,9 @@ index <- c("Richness", "Shannon", "Simpson", "Evenness")
 labs <- c("Species richness S", "Shannon H'", "Simpson D", "Evenness J'")
 col_site <- c("blue", "orange")[div$Location]
 source("src/functions/plot_div.r")
-par(mfrow = c(2, 2))
   #start plot
-pdf("output/alpha_diversity.pdf", height = 10, width = 8)
+pdf("output/alpha_diversity.pdf", height = 4, width = 4 * 1.66)
+par(mfrow = c(2, 2))
 for (i in seq_along(index)){
   indexi <- index[i]
   if(indexi == "Richness"){
@@ -96,3 +96,6 @@ for (i in seq_along(index)){
   lowess_line("Tambuyukon", indexi)
 }
 dev.off()#issue2: save all plots to same page.
+
+saveRDS(ecol, "data/intermediate/species_matrix.rds")
+saveRDS(div, "data/intermediate/alpha_diversity.rds")
