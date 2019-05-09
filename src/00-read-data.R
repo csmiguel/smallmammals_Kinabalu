@@ -37,7 +37,8 @@ animals$Specimen_collected <- plyr::mapvalues(animals$Specimen_collected,
 #read all traps from sql database
 traps <- DBI::dbGetQuery(mydb, "SELECT TrapID, Transect, Trap_number, Trap_type,
   Latitude, Longitude, Date_set, Date_closed, Location,
-  habitat_simplified as 'Habitat', DEM_elevation, Trap_nights FROM Traps")
+  habitat_simplified as 'Habitat', DEM_elevation, Trap_nights,
+  Transect_altitude FROM Traps")
 traps$Trap_type[traps$Trap_type == ""] <-  NA
 
 #create file for SF1

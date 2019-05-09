@@ -27,17 +27,7 @@ animals <- animals %>% mutate(Site = as.factor(paste(Location,
 #create matrix for species diversity with columns as species and rows as
 #locations with the number of catches at each cell
 
-ecol <- data.frame(matrix(NA, nrow = nlevels(animals$Site),
-  ncol = nlevels(animals$Species), dimnames = list(levels(animals$Site),
-  levels(animals$Species))))
-
-for (i in 1:length(levels(animals$Site))){
-  for (j in 1:length(levels(animals$Specie))){
-    ecol[i, j] <- nrow(animals[animals$Site == levels(animals$Site)[i] &
-     animals$Species == levels(animals$Species)[j], ])
-  }
-}
-
+ecol <- with(animals, table(Site, Species)) #issue: table 2 dataframe
 
 #Shannon diversity
 H <- vegan::diversity(ecol, "shannon")
