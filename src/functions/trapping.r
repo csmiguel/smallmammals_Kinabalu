@@ -1,7 +1,7 @@
 #write table with Location,Transect_altitude,catches,effort,Trap_success
 #for all traps or without tree and pitfalls.
 
-source("src/function/read_data.r")
+source("src/functions/read_data.r")
 write_trapping <- function(m = c("all", "ground_traps")){
   traps <- read_traps(m = m)
   animals <- read_traps(m = m)

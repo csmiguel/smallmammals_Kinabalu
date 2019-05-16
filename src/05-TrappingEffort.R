@@ -4,7 +4,7 @@
 # https://scholar.google.co.uk/citations?user=1M02-S4AAAAJ&hl=en
 # May 2019
 ###.............................................................................
-#GOAL: Species-Accumulation curves
+#GOAL: Tables with trapping effort
 #DESCRIPTION:
 #PROJECT: https://github.com/csmiguel/smallmammals_Kinabalu
 ###.............................................................................
