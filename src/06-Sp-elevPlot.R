@@ -67,6 +67,7 @@ par(mar = c(8, 4.5, 2, 1))
 #plot xy limits
 llim <- 200
 ulim <- 3500
+spn <- as.numeric(comb$Species)
 #empty plot with correct dimensions
 plot(spn, comb$Elevation, ylim = c(llim, ulim),
      xlim = c(0.5, max(spn) - 0.3), xaxt = "n",
