@@ -18,6 +18,8 @@
 ###.............................................................................
 library(dplyr)
 animals <- readRDS("data/intermediate/animals.rds")
+rangemodel <- readRDS("data/intermediate/rangemodel.rds")
+
 
 #create new variable concatenating Location and elevation
 animals <- animals %>% mutate(Site = as.factor(paste(Location,
@@ -70,13 +72,15 @@ pdf("output/alpha_diversity.pdf", height = 4, width = 4 * 1.66)
 par(mfrow = c(2, 2))
 for (i in seq_along(index)){
   indexi <- index[i]
-  if(indexi == "Richness"){
+  if (indexi == "Richness"){
     plot(div$Elevation, div[indexi][, 1], col = col_site,
       pch = as.numeric(div$Location),
       ylab = labs[i], xlab = "",
       ylim = c(min_s, max_s))
     plot_rangemodel(rmk, "blue")
     plot_rangemodel(rmt, "orange")
+    #plot_rangemodelr(rangemodel, "Kinabalu", "blue")
+    #plot_rangemodelr(rangemodel, "Tambuyukon", "orange")
   } else if (indexi != "Richness"){
   plot(div$Elevation, div[indexi][, 1], col = col_site,
     pch = as.numeric(div$Location),
