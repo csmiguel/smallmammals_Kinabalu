@@ -108,7 +108,7 @@ for (i in seq_along(levels(comb$Location))){
 #x axis: species labels
 endemics <- c("Melogale everetti", "Chiropodomys pusillus", "Maxomys alticola",
               "Maxomys ochraceiventer", "Niviventer rapit", "Rattus baluensis",
-              "Sundasciurus everetti", "Sundasciurus jentinki",
+              "Suncus hosei", "Sundasciurus everetti", "Sundasciurus jentinki",
               "Tupaia longipes", "Tupaia montana")
 assertthat::assert_that(all(endemics %in% levels(comb$Species)))
   #create vector with font italics and bold italics for endemics
