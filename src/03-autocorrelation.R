@@ -25,6 +25,8 @@ input1 <- "data/intermediate/animals.rds"
 animals <- readRDS(input1)
 input2 <- "data/intermediate/alpha_diversity.rds"
 div <- readRDS(input2)
+input3 <- "data/intermediate/rangemodel.rds"
+rmod <- readRDS(input3)
 
 #create new variable concatenating Location and elevation
 animals <- animals %>% dplyr::mutate(Site = as.factor(paste(animals$Location,
@@ -47,7 +49,6 @@ input_autocorr <- dplyr::left_join(div, coords, by = c("Site", "Site")) %>%
     dplyr::arrange(Location, Elevation)
 
 #include geometric constraints as a variable
-rmod <- readRDS("data/intermediate/rangemodel.rds")
 # convert results from rangemodel from a list to a dataframe
 rangemodel <-
 seq_along(rmod) %>% plyr::ldply(function(x) {

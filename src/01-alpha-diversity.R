@@ -52,44 +52,5 @@ div <- data.frame(Site = names(H),
 div %>% select(-Site) %>% arrange(Location, Elevation) %>%
 write.csv(file = "output/alpha_diversity.csv", row.names = F)
 
-
-#2. Plot alpha diversity
-  #create objects from RangeModel results
-  rmk <- read.csv("data/raw/RinputKinabalu5000.txt")#results from RangeModel
-  rmt <- read.csv("data/raw/RinputTambuyukon5000.txt")#results from RangeModel
-  #issue1: redo rangemodel with R script
-
-  #ylim for species Richness
-  max_s <- max(rmk$Computed.Upper.95.CI, rmt$Computed.Upper.95.CI, div$Richness)
-  min_s <- 0
-
-index <- c("Richness", "Shannon", "Simpson", "Evenness")
-labs <- c("Species richness S", "Shannon H'", "Simpson D", "Evenness J'")
-col_site <- c("blue", "orange")[div$Location]
-source("src/functions/plot_div.r")
-  #start plot
-pdf("output/alpha_diversity.pdf", height = 4, width = 4 * 1.66)
-par(mfrow = c(2, 2))
-for (i in seq_along(index)){
-  indexi <- index[i]
-  if (indexi == "Richness"){
-    plot(div$Elevation, div[indexi][, 1], col = col_site,
-      pch = as.numeric(div$Location),
-      ylab = labs[i], xlab = "",
-      ylim = c(min_s, max_s))
-    plot_rangemodel(rmk, "blue")
-    plot_rangemodel(rmt, "orange")
-    #plot_rangemodelr(rangemodel, "Kinabalu", "blue")
-    #plot_rangemodelr(rangemodel, "Tambuyukon", "orange")
-  } else if (indexi != "Richness"){
-  plot(div$Elevation, div[indexi][, 1], col = col_site,
-    pch = as.numeric(div$Location),
-    ylab = labs[i], xlab = "")
-  }
-  lowess_line("Kinabalu", indexi)
-  lowess_line("Tambuyukon", indexi)
-}
-dev.off()#issue2: save all plots to same page.
-
 saveRDS(ecol, "data/intermediate/species_matrix.rds")
 saveRDS(div, "data/intermediate/alpha_diversity.rds")
