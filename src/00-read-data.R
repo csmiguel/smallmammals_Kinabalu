@@ -63,3 +63,10 @@ rm(mydb, animals, traps)
 
 saveRDS(animals, "data/intermediate/animals.rds")
 saveRDS(traps, "data/intermediate/traps.rds")
+
+###endemic species to Borneo
+endemics <- c("Melogale everetti", "Chiropodomys pusillus", "Maxomys alticola",
+              "Maxomys ochraceiventer", "Niviventer rapit", "Rattus baluensis",
+              "Suncus hosei", "Sundasciurus everetti", "Sundasciurus jentinki",
+              "Tupaia longipes", "Tupaia montana")
+saveRDS(endemics, "data/intermediate/endemics.rds")
