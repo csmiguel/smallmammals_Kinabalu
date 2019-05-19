@@ -22,33 +22,39 @@ library(magrittr)
 input <- "data/intermediate/species_matrix.rds"
 ecol <- readRDS(input)
 input2 <- "data/intermediate/endemics.rds"
-endemics <- readRDS(input2)
-#1. Dissimilarity index
-  #Bray_Curtis
-bc_b <- vegan::vegdist(ecol, "bray")
-  #Jaccard
-bc_jc <- vegan::vegdist(ecol, "jaccard")
+endemics <- readRDS(input2) %>% gsub(" ", ".", .) #this replacement allows
+  #proper matching with colnames in ecol.
 
-#2. Clustering
-cl <- hclust(bc_b, method = "average")
-pdf("output/clustering.pdf", height = 5.5, width = 5.5 * 1.3)
-plot(cl, main = "Bray_curtis distance UPGMA")
-dev.off()
-
-#turnonver and nestedness components of beta diversity
+#tranformations for the ecology matrix
 ecol[ecol > 0] <- 1
 ecol1 <- ecol %>%
   tibble::rownames_to_column() %>%
   dplyr::mutate(elev = as.numeric(gsub("^.*_", "", rowname))) %>%
   dplyr::mutate(location = gsub("_.*$", "", rowname)) %>%
   dplyr::arrange(location, elev) %>% dplyr::select(-elev)
+mt <- c("Kinabalu", "Tambuyukon") #mountains
 
-ecolend <- ecol1[, match(c(endemics, "location", "rowname"),
-  gsub("\\.", " ", names(ecol1)))]
-ecolNend <- ecol1[, -match(endemics, gsub("\\.", " ", names(ecol1)))]
+#1. Dissimilarity index
+  #Jaccard
+bc_jc <- vegan::vegdist(ecol, "jaccard")
 
-mt <- c("Kinabalu", "Tambuyukon")
-l <- list(ecol = ecol1, ecolend = ecolend, ecolNend = ecolNend)
+#2. Clustering
+cl <- hclust(bc_jc, method = "average")
+pdf("output/clustering.pdf", height = 5.5, width = 5.5 * 1.3)
+plot(cl, main = "Jaccard distance UPGMA")
+dev.off()
+
+#3. Pairwise turnonver and nestedness components of beta diversity
+# GOAL: compute turnonver and nestedness components of diversity from pairwise
+# locations for each mountain
+
+  #matrix with only endemics
+ecolend <- ecol1[, match(c(endemics, "location", "rowname"), names(ecol1))]
+  #matrix with non-endemics
+ecolNend <- ecol1[, -match(endemics, names(ecol1))]
+  #list with all ecol matrix
+l <- list(all = ecol1, only_endemics = ecolend, non_endemics = ecolNend)
+  #compute pairwise beta diversity between locations for each mountain
 h <- seq_along(l) %>%
   plyr::llply(function(y){
     z <-  l[[y]]
@@ -56,113 +62,32 @@ h <- seq_along(l) %>%
       lapply(function(x){
          z %>% filter(location == mt[x]) %>%
           dplyr::select(-location) %>%
+          dplyr::mutate(rowname = gsub("^.*_", "", rowname)) %>%
           tibble::column_to_rownames() %>%
-          betapart::beta.pair()
+          betapart::beta.pair() %>% lapply(round, 2)
       })
   names(p) <- mt
   p
 })
 names(h) <- names(l)
+  #write ouput to file
+sink("output/pairwise_betadiv.txt")
+h$all
+sink()
+rm(ecolend, l, ecolNend)
 
-
-#proportion of endemic species
-endr <- gsub(" ", ".", endemics)
-n_end <- seq_along(mt) %>%
-  lapply(function(x){
-  ecol1 %>%
-  dplyr::mutate(elev = as.numeric(gsub("^.*_", "", rowname))) %>%
-  dplyr::filter(location == mt[x]) %>%
-  dplyr::select(-location, -rowname) %>%
-  tibble::column_to_rownames("elev") %>% {sp <<- rowSums(.); .} %>%
-  dplyr::select(endr) %>% rowSums() / sp
-})
-names(n_end) <- mt
-#1. Bootstrap across species
-perm_end <- seq_along(mt) %>%
-  lapply(function(x){
-    z <- ecol1 %>%
-    dplyr::mutate(elev = as.numeric(gsub("^.*_", "", rowname))) %>%
-    dplyr::filter(location == mt[x]) %>%
-    dplyr::select(-location, -rowname) %>%
-    tibble::column_to_rownames("elev") %>% .[, colSums(.) > 0]
-    1:1000 %>%
-sapply(function(y){
-  z %>% {sp <<- rowSums(.); .} %>%
-  .[, sample(ncol(z), sum(endr %in% names(z)), replace = F)] %>% rowSums() / sp
-  }) %>% apply(1, quantile, probs = c(0.025, 0.975))
-})
-names(perm_end) <- mt
-cols <- c("blue", "orange")
-
-plot(1, type = "n", xlim = c(500, 3300), ylim = c(0, max(unlist(n_end))),
-    ylab = "Endemic species", xlab = "Elevation")
-for (i in seq_along(mt)){
-  nn <- names(n_end[[mt[i]]])
-  pp <- perm_end[[mt[i]]]
-  lines(nn, n_end[[mt[i]]], col = cols[i], type = "b")
-  polygon(c(nn, rev(nn)), c(pp[1, ], rev(pp[2, ])),
-  col = adjustcolor(cols[i], alpha = 0.2), border = NA)
-}
-
-#2. Bootstrap within sites
-site_perm <- seq_along(mt) %>%
-  lapply(function(x){
-    z <- ecol1 %>%
-    dplyr::mutate(elev = as.numeric(gsub("^.*_", "", rowname))) %>%
-    dplyr::filter(location == mt[x]) %>%
-    dplyr::select(-location, -rowname) %>%
-    tibble::column_to_rownames("elev") %>% .[, colSums(.) > 0]
-    1:1000 %>%
-sapply(function(y){
-  z %>%
-      apply(1, function(x){
-      sp_site <- x[x == 1]
-      sp_site[names(sp_site) %in% endr] <- 0
-      h <- sample(sp_site, length(sp_site), replace = T)
-      1 - mean(h)
-    })
-  }) %>% apply(1, quantile, probs = c(0.025, 0.975))
-})
-names(site_perm) <- mt
-cols <- c("blue", "orange")
-
-pdf("output/endemism_elevation.pdf", width = 4 * 1.3, height = 4)
-  plot(1, type = "n", xlim = c(500, 3300), ylim = c(0, max(unlist(n_end))),
-      ylab = "Proportion of endemic species", xlab = "Elevation (m)",
-      yaxt = "n")
-  for (i in seq_along(mt)){
-    nn <- names(n_end[[mt[i]]])
-    pp <- site_perm[[mt[i]]]
-    lines(nn, n_end[[mt[i]]], col = cols[i], type = "o", pch = c(15, 17)[i])
-    polygon(c(nn, rev(nn)), c(pp[1, ], rev(pp[2, ])),
-    col = adjustcolor(cols[i], alpha = 0.2), border = NA)
-  }
-  axis(2, at = seq(0, 1, 0.2), labels = seq(0, 1, 0.2), las = 2)
-  legend("bottomright", legend = sapply(mt, function(x) paste0("Mt. ", x)),
-    pch = c(15, 17), col = cols, bty = "n", lty = 1)
-dev.off()
-
-#fit model
-input_model <-
-  reshape::melt(n_end) %>%
-  dplyr::mutate(elev = seq_along(n_end) %>% sapply(function(x)
-    c(names(n_end[[x]]))) %>% as.vector() %>% as.numeric) %>%
-  dplyr::rename(prop_end = value) %>%
-  dplyr::rename(location = L1) %>%
-  dplyr::mutate(location = as.factor(location))
-
-m1 <- lme4::glmer(prop_end ~ elev + (1 | location),
-  data = input_model, family = binomial)
-m2 <- lme4::glmer(prop_end ~ (1 | location),
-  data = input_model, family = binomial)
-anova(m1, m2)
-
-table_model %<>% mutate(fitted_m1 = fitted(m1))
-
-#beta multi with and without endemics
+#4. Contribution of endemics to nestedness and turnover of beta diversity
+# I will calculate (1) overall beta diversity and (2) beta diversity without
+# endemic species. To evaluate the significancy of the nestedness and turnover
+# components of beta diversity without endemics, I resample from the ecological
+# matrix containing all species a number of columns = (number of columns -
+# number of endemics). I do it without replacement because the concept is what
+# is the effect of removing the endemics in beta diversity compared to removing
+# random samples. I repeat this nperm times to estimate p values and
+# quantiles.
+  #vector with names of variables returned by beta.multi
 namesb <- c("beta.SIM", "beta.SNE",  "beta.SOR")
-  #beta div on all sp matrix
-
+  #beta diversity on matrix with all species
 b_all <- seq_along(mt) %>%
   lapply(function(x){
     ecol1 %>% filter(location == mt[x]) %>%
@@ -171,32 +96,38 @@ b_all <- seq_along(mt) %>%
       rename(all = ".") %>% t()
     })
 names(b_all) <- mt
-  #beta only on endemics
+  #beta diversity on matrix with only endemics
 b_Non_end <- seq_along(mt) %>%
   lapply(function(x){
     ecol1 %>% filter(location == mt[x]) %>%
       dplyr::select(-rowname, -location) %>%
-      dplyr::select(-endr) %>% .[, colSums(.) > 0] %>%
+      dplyr::select(-endemics) %>% .[, colSums(.) > 0] %>%
       betapart::beta.multi() %>% unlist() %>% as.data.frame() %>%
       rename(Non_endemics = ".") %>% t()
     })
 names(b_Non_end) <- mt
 
-    #beta permutations
-nperm <- 5000
+    #beta diversity on permuted matrices removing
+    # random species = length(endemics)
+nperm <- 5000 #number of perm
 b_perm <- seq_along(mt) %>%
   lapply(function(x){
     1:nperm %>% sapply(function(y){
     ecol1 %>% filter(location == mt[x]) %>%
       dplyr::select(-rowname, -location) %>%
-      .[, colSums(.) > 0] %>%
-      {sp <<- ncol(.); ensp <<- endr[endr %in% names(.)]; .} %>%
+      .[, colSums(.) > 0] %>% #removes especies not present in a given mt
+      #stores sp as number of species in a given mt and ensp, number of endemics
+      #in that given mt.
+      {sp <<- ncol(.); ensp <<- endemics[endemics %in% names(.)]; .} %>%
       .[, sample(sp, sp - length(ensp), replace = F)] %>%
       betapart::beta.multi()
     }
   ) %>% apply(1, unlist) %>%
+        #get quantiles
         {quant <<- apply(., 2, quantile, probs = c(0.025, 0.5, 0.975)); .} %>%
+        #bind permuted values to values measured withouth Non_endemics
         rbind(b_Non_end[[x]], .) %>%
+        #calculate p-values
         apply(2, function(y) sum(y[1] <= y[2:nperm]) / nperm) %>%
         rbind(., quant) %>%
         `rownames<-`(c("p_value", rownames(quant)))
@@ -212,5 +143,6 @@ names(b_perm) <- mt
   names(beta_endemics) <- mt
 
 ##save output
-saveRDS(bc_b, "data/intermediate/bray_curtis_distance.rds")
-saveRDS(beta_endemics, "data/intermediate/beta_endemics.rds")
+saveRDS(bc_jc, "data/intermediate/bray_curtis_distance.rds")
+saveRDS(beta_endemics, "data/intermediate/betadiv_global.rds")
+saveRDS(h, "data/intermediate/betadiv_pairwise.rds")
