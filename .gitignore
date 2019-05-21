@@ -2,3 +2,7 @@
 *.rds
 *.DStore
 *history*
+data/intermediate/
+*.DS_Store
+output/
+src/999-recycle.R
