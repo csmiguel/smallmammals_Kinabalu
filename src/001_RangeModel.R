@@ -52,7 +52,7 @@ animals %>%
   rangemodelR::range_shuffle(., boundary = boundr,
                                    interval = int, var = NULL,
                                    sites = seq(int / 2, maxel + int, int),
-                                   reps = 500, degen = FALSE) %>%
+                                   reps = 5000, degen = FALSE) %>%
   dplyr::mutate(class = fc2nu(rownames(.))) %>%
    dplyr::arrange(class)
                                  })
