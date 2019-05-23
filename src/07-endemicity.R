@@ -25,8 +25,11 @@ input2 <- "data/intermediate/endemics.rds"
 endemics <- readRDS(input2) %>% gsub(" ", ".", .) #this replacement allows
   #proper matching with colnames in ecol.
 mt <- c("Kinabalu", "Tambuyukon")
+
+source("src/functions/plot_bootstrap_endemics.r")
+source("src/parameters/params.r")
 rep0 <- function(x) {x[x > 0] <- 1; x}
-perm <- 100
+perm <- 1000
 ##
 ecol1 <- ecol %>%
   tibble::rownames_to_column() %>%
@@ -109,17 +112,8 @@ sapply(function(y){
 })
 names(perm_catches) <- mt
 
-#3. Plots
-source("src/functions/plot_bootstrap_endemics.r")
-pdf("output/endemism_elevation.pdf", width = 4 * 2.3, height = 4)
-par(mfrow = c(1, 2))
-# 3.1 Endemic species elevation (point 2)
-  plot_bootstrap_endemics(n_end, site_perm, "Proportion of endemic species", mt)
-# 3.2 Endemic catches elevation (point 2)
-  plot_bootstrap_endemics(end_catches, perm_catches,
-    "Proportion of endemic catches", mt)
-dev.off()
-#fit model
+#3. fit model
+  #create input for model
 input_model <-
   reshape::melt(n_end) %>%
   dplyr::mutate(elev = seq_along(n_end) %>% sapply(function(x)
@@ -127,11 +121,37 @@ input_model <-
   dplyr::rename(prop_end = value) %>%
   dplyr::rename(location = L1) %>%
   dplyr::mutate(location = as.factor(location))
-
+  #fit models
 m1 <- lme4::glmer(prop_end ~ elev + (1 | location),
   data = input_model, family = binomial)
 m2 <- lme4::glmer(prop_end ~ (1 | location),
   data = input_model, family = binomial)
+  #output results from models to file
+sink("output/endemism_models.txt")
+cat("Full model fitted:")
+m1
+cat("Null model fitted:")
+m2
+cat("Comparison between m1 and m2:")
 anova(m1, m2)
+sink()
+#predict values
+output_model <- input_model %>% mutate(fitted = boot::inv.logit(predict(m1)))
 
-table_model %<>% mutate(fitted_m1 = fitted(m1))
+#4. Plots
+
+pdf("output/endemism_elevation.pdf", width = 4 * 2.3, height = 4)
+par(mfrow = c(1, 2), oma = c(1, 0, 1, 0), mar = c(4, 5, 1, 1), cex.axis = 0.8)
+# 3.1 Endemic species elevation (point 2)
+  plot_bootstrap_endemics(n_end, site_perm, "Proportion of Bornean endemics",
+  mt, cols)
+  #plot fitted values from model
+  # seq_along(mt) %>% sapply(function(x){
+  # y <- dplyr::filter(output_model, location == mt[x])
+  # lines(y$elev, y$fitted, col = cols2[x])
+  # })
+
+# 3.2 Endemic catches elevation (point 2)
+  plot_bootstrap_endemics(end_catches, perm_catches,
+    "Proportion of catches from Bornean endemics", mt, cols)
+dev.off()
