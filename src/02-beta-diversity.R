@@ -24,8 +24,9 @@ ecol <- readRDS(input)
 input2 <- "data/intermediate/endemics.rds"
 endemics <- readRDS(input2) %>% gsub(" ", ".", .) #this replacement allows
   #proper matching with colnames in ecol.
+source("src/parameters/params.r")
 
-#tranformations for the ecology matrix
+#1. tranformations for the ecology matrix
 ecol[ecol > 0] <- 1
 ecol1 <- ecol %>%
   tibble::rownames_to_column() %>%
@@ -34,15 +35,31 @@ ecol1 <- ecol %>%
   dplyr::arrange(location, elev) %>% dplyr::select(-elev)
 mt <- c("Kinabalu", "Tambuyukon") #mountains
 
-#1. Dissimilarity index
-  #Jaccard
-bc_jc <- vegan::vegdist(ecol, "jaccard")
-
-#2. Clustering
-cl <- hclust(bc_jc, method = "average")
-pdf("output/clustering.pdf", height = 5.5, width = 5.5 * 1.3)
-plot(cl, main = "Jaccard distance UPGMA")
+#2. Pairwise beta diversity for all locations
+# calculate sorensen distance between sites
+sor <-
+  ecol1 %>%
+  dplyr::select(-location) %>%
+  {sor_matrix <<- tibble::column_to_rownames(.)} %>%
+  betapart::beta.pair()
+# root tree
+tk <- ape::nj(sor$beta.sor) %>%
+  phangorn::midpoint(tk)
+# add "m" to labels
+tk$tip.label %<>% paste("m")
+# create color vector for plotting
+col_tip <- tk$tip.label %>%
+  gsub(pattern = "_.*$", replacement = "") %>%
+  {cols[as.factor(.)]}
+#  plot
+pdf("output/clustering.pdf", height = 5.5 * 1.3, width = 5.5)
+plot(tk, tip.color = col_tip, font = 1, align.tip.label = T)
+ape::axisPhylo()
 dev.off()
+sink("output/sorensen_pairwise.txt")
+sor
+sink()
+
 
 #3. Pairwise turnonver and nestedness components of beta diversity
 # GOAL: compute turnonver and nestedness components of diversity from pairwise
