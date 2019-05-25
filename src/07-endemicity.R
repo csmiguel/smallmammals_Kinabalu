@@ -59,7 +59,7 @@ site_perm <- seq_along(mt) %>%
     dplyr::filter(location == mt[x]) %>%
     dplyr::select(-location, -rowname) %>%
     tibble::column_to_rownames("elev") %>% .[, colSums(.) > 0]
-    1:100 %>%
+    1:perm %>%
 sapply(function(y){
   z %>%
       apply(1, function(w){
@@ -104,7 +104,9 @@ sapply(function(y){
   apply(1, function(h){
     end01 <- names(h) %in% endemics %>% as.numeric
     seq_along(end01) %>%
-      sapply(function(x) rep(end01[x], h[x])) %>% unlist %>%
+      sapply(function(x) rep(end01[x], h[x])) %>%
+      unlist %>%
+      #core command
       {sample(., size = sum(h), replace = T)} %>%
       mean
     })
@@ -113,6 +115,7 @@ sapply(function(y){
 names(perm_catches) <- mt
 
 #3. fit model
+  #3.1 for prop of endemics
   #create input for model
 input_model <-
   reshape::melt(n_end) %>%
@@ -128,15 +131,45 @@ m2 <- lme4::glmer(prop_end ~ (1 | location),
   data = input_model, family = binomial)
   #output results from models to file
 sink("output/endemism_models.txt")
-cat("Full model fitted:")
-m1
-cat("Null model fitted:")
-m2
-cat("Comparison between m1 and m2:")
+cat("\nFull model fitted:\n")
+summary(m1)
+cat("\nNull model fitted:\n")
+summary(m2)
+cat("\nComparison between m1 and m2:\n")
 anova(m1, m2)
 sink()
 #predict values
 output_model <- input_model %>% mutate(fitted = boot::inv.logit(predict(m1)))
+#3.2 for proportion of cathces
+input_model_catches <-
+  reshape::melt(end_catches) %>%
+  dplyr::mutate(elev = seq_along(n_end) %>% sapply(function(x)
+    c(names(n_end[[x]]))) %>% as.vector() %>% as.numeric) %>%
+  dplyr::rename(prop_end = value) %>%
+  dplyr::rename(location = L1) %>%
+  dplyr::mutate(location = as.factor(location))
+  #fit models
+m21 <- lme4::glmer(prop_end ~ elev + (1 | location),
+  data = input_model_catches, family = binomial)
+m22 <- lme4::glmer(prop_end ~ (1 | location),
+  data = input_model_catches, family = binomial)
+  #output results from models to file
+sink("output/endemism_models.txt")
+cat("\n1. Proportion of endemic species:\n")
+cat("\nFull model fitted:\n")
+summary(m1)
+cat("\nNull model fitted:\n")
+summary(m2)
+cat("\nComparison between m1 and m2:\n")
+anova(m1, m2)
+cat("\n2. Proportion of catches from endemic species:\n")
+cat("\nFull model fitted:\n")
+summary(m21)
+cat("\nNull model fitted:\n")
+summary(m22)
+cat("\nComparison between m1 and m2:\n")
+anova(m21, m22)
+sink()
 
 #4. Plots
 
@@ -150,8 +183,9 @@ par(mfrow = c(1, 2), oma = c(1, 0, 1, 0), mar = c(4, 5, 1, 1), cex.axis = 0.8)
   # y <- dplyr::filter(output_model, location == mt[x])
   # lines(y$elev, y$fitted, col = cols2[x])
   # })
-
+  text(520, 0.96, "A")
 # 3.2 Endemic catches elevation (point 2)
   plot_bootstrap_endemics(end_catches, perm_catches,
     "Proportion of catches from Bornean endemics", mt, cols)
+  text(520, 0.96, "B")
 dev.off()
