@@ -139,7 +139,8 @@ b_perm <- seq_along(mt) %>%
       .[, sample(sp, sp - length(ensp), replace = F)] %>%
       betapart::beta.multi()
     }
-  ) %>% apply(1, unlist) %>%
+  ) %>% apply(1, unlist) %>% {
+    assign(paste0("all_perm", mt[x]),. , envir = .GlobalEnv) ; .} %>%
         #get quantiles
         {quant <<- apply(., 2, quantile, probs = c(0.025, 0.5, 0.975)); .} %>%
         #bind permuted values to values measured withouth Non_endemics
@@ -158,8 +159,9 @@ names(b_perm) <- mt
   {write.table(., paste0("output/beta_endemics_", mt[x], ".txt")); .}
         })
   names(beta_endemics) <- mt
+endemics_output <- list(summary = beta_endemics, permT = all_permTambuyukon,
+  permK = all_permKinabalu)
 
 ##save output
-saveRDS(bc_jc, "data/intermediate/bray_curtis_distance.rds")
-saveRDS(beta_endemics, "data/intermediate/betadiv_global.rds")
+saveRDS(endemics_output, "data/intermediate/betadiv_global.rds")
 saveRDS(h, "data/intermediate/betadiv_pairwise.rds")
