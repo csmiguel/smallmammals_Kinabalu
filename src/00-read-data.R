@@ -4,19 +4,11 @@
 # https://scholar.google.co.uk/citations?user=1M02-S4AAAAJ&hl=en
 # May 2019
 ###.............................................................................
-#GOAL: read data from mysql database and create an excel formatted file for
+#DESCRIPTION: read data from mysql database and creates an excel formatted file for
 #supplementary file.
-#DESCRIPTION:
 #PROJECT: https://github.com/csmiguel/smallmammals_Kinabalu
 ###.............................................................................
-#  REQUIRED FILES:
-#   Description:
-#   Inpath:
-#  OUTPUT:
-#    Description:
-#    Outpath:
-#  DEPENDENCIES:
-###.............................................................................
+
 sf1 <- "data/raw/SF1.xlsx"
 if (!file.exists(sf1)){ #create SF1 if it does not exists
 mydb <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = 'Field', user = 'root',

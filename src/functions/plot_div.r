@@ -27,8 +27,8 @@ plot_pred <- function(mountain = mountain, m = model){
   assertthat::assert_that(mountain %in% c("Kinabalu", "Tambuyukon"),
     msg = "check mountain name in lowess line function")
   model <- paste0("pred_", m)
-  if(mountain == "Tambuyukon") {col <- cols[1]; p_pch = 17}
-  if(mountain == "Kinabalu") {col <- cols[2]; p_pch = 16}
+  if(mountain == "Tambuyukon") {col <- cols[2]; p_pch = 17}
+  if(mountain == "Kinabalu") {col <- cols[1]; p_pch = 16}
   points(x = div[["Elevation"]][div$Location == mountain],
   y = div[[model]][div$Location == mountain], col = col, pch = p_pch)
 }

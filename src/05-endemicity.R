@@ -4,30 +4,19 @@
 # https://scholar.google.co.uk/citations?user=1M02-S4AAAAJ&hl=en
 # May 2019
 ###.............................................................................
-#GOAL: Plot species per elevation
 #DESCRIPTION: Create figure of mammal distribution in different altitudes as
-# in Fig 3 Heaney 2011. Compare our data with Nor data.
 #PROJECT: https://github.com/csmiguel/smallmammals_Kinabalu
 ###.............................................................................
-#  REQUIRED FILES:
-#   Description:
-#   Inpath:
-#  OUTPUT:
-#    Description:
-#    Outpath:
-#  DEPENDENCIES:
-###.............................................................................
+
 library(dplyr)
 
 input <- "data/intermediate/species_matrix.rds"
 ecol <- readRDS(input)
 input2 <- "data/intermediate/endemics.rds"
-endemics <- readRDS(input2) %>% gsub(" ", ".", .) #this replacement allows
-  #proper matching with colnames in ecol.
-mt <- c("Kinabalu", "Tambuyukon")
+endemics <- readRDS(input2)
 
-source("src/functions/plot_bootstrap_endemics.r")
 source("src/parameters/params.r")
+
 rep0 <- function(x) {x[x > 0] <- 1; x}
 perm <- 1000
 ##
@@ -171,21 +160,8 @@ cat("\nComparison between m1 and m2:\n")
 anova(m21, m22)
 sink()
 
-#4. Plots
-
-pdf("output/endemism_elevation.pdf", width = 4 * 2.3, height = 4)
-par(mfrow = c(1, 2), oma = c(1, 0, 1, 0), mar = c(4, 5, 1, 1), cex.axis = 0.8)
-# 3.1 Endemic species elevation (point 2)
-  plot_bootstrap_endemics(n_end, site_perm, "Proportion of Bornean endemics",
-  mt, cols)
-  #plot fitted values from model
-  # seq_along(mt) %>% sapply(function(x){
-  # y <- dplyr::filter(output_model, location == mt[x])
-  # lines(y$elev, y$fitted, col = cols2[x])
-  # })
-  text(520, 0.96, "A")
-# 3.2 Endemic catches elevation (point 2)
-  plot_bootstrap_endemics(end_catches, perm_catches,
-    "Proportion of catches from Bornean endemics", mt, cols)
-  text(520, 0.96, "B")
-dev.off()
+#save objects
+saveRDS(list(m1 = m1, m2 = m2, m21 = m21, m22 = m22),
+ "data/intermediate/models_endemicity.rds")
+save(n_end, site_perm, end_catches, perm_catches,
+  file = "data/intermediate/plot_endemics.Rdata")

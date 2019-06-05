@@ -19,6 +19,6 @@ write_trapping <- function(m = c("all", "ground_traps")){
         N %>%
         cbind(select(tr, effort)) %>%
         mutate(Trap_success = round(catches / effort, 3))
-    outputp <- paste0("output/trap_success_", m, ".txt")
+    outputp <- paste0("output/Table1_trap_success_", m, ".txt")
     write.csv(trap_success, outputp)
       }

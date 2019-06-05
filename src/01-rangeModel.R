@@ -4,24 +4,8 @@
 # https://scholar.google.co.uk/citations?user=1M02-S4AAAAJ&hl=en
 # May 2019
 ###.............................................................................
-#GOAL: model geometric constraints
-#DESCRIPTION:as in Wang and Fang 2012
+#DESCRIPTION: models geometric constraints. As in Wang and Fang 2012
 #PROJECT: https://github.com/csmiguel/smallmammals_Kinabalu
-###.............................................................................
-#  REQUIRED FILES:
-#   Description:
-#   Inpath:
-#  OUTPUT:
-#    Description:
-#    Outpath:
-#  DEPENDENCIES:
-###.............................................................................
-# https://cran.r-project.org/web/packages/rangemodelR/rangemodelR.pdf
-# https://onlinelibrary.wiley.com/doi/full/10.1111/j.1466-8238.2007.00286.x
-# https://onlinelibrary.wiley.com/doi/full/10.1111/j.1466-8238.2006.00284.x
-# https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0027975
-# http://craigmcclain.com/Papers/McClain_OIKOS_2004.pdf
-#10.1111/j.1600-0587.2012.07384.x
 
 library(dplyr)
 library(rangemodelR)
@@ -49,6 +33,7 @@ animals %>%
   dplyr::mutate(mid = (max + min) / 2) %>%
   dplyr::select(-Species) %>%
   dplyr::mutate(num_zones = ceiling((range + 1) / int)) %>%
+  #core function
   rangemodelR::range_shuffle(., boundary = boundr,
                                    interval = int, var = NULL,
                                    sites = seq(int / 2, maxel + int, int),

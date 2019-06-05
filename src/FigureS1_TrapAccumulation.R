@@ -4,18 +4,10 @@
 # https://scholar.google.co.uk/citations?user=1M02-S4AAAAJ&hl=en
 # May 2019
 ###.............................................................................
-#GOAL: Species-Accumulation curves
-#DESCRIPTION:
+#DESCRIPTION: Species-Accumulation curves
 #PROJECT: https://github.com/csmiguel/smallmammals_Kinabalu
 ###.............................................................................
-#  REQUIRED FILES:
-#   Description:
-#   Inpath:
-#  OUTPUT:
-#    Description:
-#    Outpath:
-#  DEPENDENCIES:
-###.............................................................................
+
 library(dplyr)
 library(magrittr)
 
@@ -53,7 +45,7 @@ acc_sp <- animals %>%
 ####Species accumulation plots
 palette1 <- c("black", "#8c510a", "#d8b365", "#c7eae5", "#5ab4ac", "#01665e")
 
-pdf(file = "output/trapping_effort.pdf", width = 8, height = 4)
+pdf(file = "output/FigureS1_TrapAccumCurves.pdf", width = 8, height = 4)
 mt <- c("Kinabalu", "Tambuyukon")
 par(mfrow = c(1, 2))
 maxy <- max(acc_sp[, -1], na.rm = T)

@@ -4,26 +4,18 @@
 # https://scholar.google.co.uk/citations?user=1M02-S4AAAAJ&hl=en
 # May 2019
 ###.............................................................................
-#GOAL:
+#GOAL: beta diversity. Overall and pairwise measures
 #DESCRIPTION:
 #PROJECT: https://github.com/csmiguel/smallmammals_Kinabalu
 ###.............................................................................
-#  REQUIRED FILES:
-#   Description:
-#   Inpath:
-#  OUTPUT:
-#    Description:
-#    Outpath:
-#  DEPENDENCIES:
-###.............................................................................
+
 library(dplyr)
 library(magrittr)
 
 input <- "data/intermediate/species_matrix.rds"
 ecol <- readRDS(input)
 input2 <- "data/intermediate/endemics.rds"
-endemics <- readRDS(input2) %>% gsub(" ", ".", .) #this replacement allows
-  #proper matching with colnames in ecol.
+endemics <- readRDS(input2)
 source("src/parameters/params.r")
 
 #1. tranformations for the ecology matrix
@@ -45,21 +37,10 @@ sor <-
 # root tree
 tk <- ape::nj(sor$beta.sor) %>%
   phangorn::midpoint(tk)
-# add "m" to labels
-tk$tip.label %<>% paste("m")
-# create color vector for plotting
-col_tip <- tk$tip.label %>%
-  gsub(pattern = "_.*$", replacement = "") %>%
-  {cols[as.factor(.)]}
-#  plot
-pdf("output/clustering.pdf", height = 5.5 * 1.3, width = 5.5)
-plot(tk, tip.color = col_tip, font = 1, align.tip.label = T)
-ape::axisPhylo()
-dev.off()
+# write to file pairwise beta diversity
 sink("output/sorensen_pairwise.txt")
 sor
 sink()
-
 
 #3. Pairwise turnonver and nestedness components of beta diversity
 # GOAL: compute turnonver and nestedness components of diversity from pairwise
@@ -88,7 +69,7 @@ h <- seq_along(l) %>%
 })
 names(h) <- names(l)
   #write ouput to file
-sink("output/pairwise_betadiv.txt")
+sink("output/TableS3_pairwise_betadiv.txt")
 h$all
 sink()
 rm(ecolend, l, ecolNend)
@@ -165,3 +146,4 @@ endemics_output <- list(summary = beta_endemics, permT = all_permTambuyukon,
 ##save output
 saveRDS(endemics_output, "data/intermediate/betadiv_global.rds")
 saveRDS(h, "data/intermediate/betadiv_pairwise.rds")
+saveRDS(tk, "data/intermediate/nj_tree.rds")

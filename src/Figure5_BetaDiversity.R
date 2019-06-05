@@ -8,14 +8,7 @@
 #DESCRIPTION:
 #PROJECT: https://github.com/csmiguel/smallmammals_Kinabalu
 ###.............................................................................
-#  REQUIRED FILES:
-#   Description:
-#   Inpath:
-#  OUTPUT:
-#    Description:
-#    Outpath:
-#  DEPENDENCIES:
-###.............................................................................
+
 library(dplyr)
 
 input1 <- "data/intermediate/betadiv_global.rds"
@@ -41,7 +34,7 @@ plot_beta_div <- function(dataset, boff, colmt, permobject){
              col = "red", lwd = 2, lty = 2)
   }
   }
-pdf("output/beta_diversity.pdf", width = 5 * 1.2, height = 5)
+pdf("output/Figure5_beta_diversity.pdf", width = 5 * 1.2, height = 5)
   boxplot(value~Var2, data = permK, lwd = 2,
     ylab = "Index value", border = "white", las = 1)
   plot_beta_div(endemics$summary$Kinabalu, - 0.2, cols[1], permK)

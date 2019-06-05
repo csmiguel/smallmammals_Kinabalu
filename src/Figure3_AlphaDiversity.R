@@ -4,18 +4,11 @@
 # https://scholar.google.co.uk/citations?user=1M02-S4AAAAJ&hl=en
 # May 2019
 ###.............................................................................
-#GOAL: alpha diversity
+#GOAL: plot alpha diversity
 #DESCRIPTION:
 #PROJECT: https://github.com/csmiguel/smallmammals_Kinabalu
 ###.............................................................................
-#  REQUIRED FILES:
-#   Description:
-#   Inpath:
-#  OUTPUT:
-#    Description:
-#    Outpath:
-#  DEPENDENCIES:
-###.............................................................................
+
 library(dplyr)
 
 input1 <- "data/intermediate/models_alpha_diversity.rds"
@@ -36,7 +29,7 @@ panel <- c("(A)", "(B)", "(C)", "(D)")
 psize <- 4.5
 
   #start plot
-pdf("output/alpha_diversity.pdf", height = psize, width = psize * 1.66)
+pdf("output/Figure3_alpha_diversity.pdf", height = psize, width = psize * 1.66)
 par(mfrow = c(2, 2), oma = rep(1, 4), mar = c(1, 2, 1, 1), las = 1)
 for (i in seq_along(index)){
   indexi <- index[i]
@@ -47,9 +40,6 @@ for (i in seq_along(index)){
       ylab = "",
       #ylab = labs[i],
       ylim = y_lim, xaxt = draw_xaxis[i])
-    #results from rangemodel5
-    #plot_rangemodel(rmk, "blue")
-    #plot_rangemodel(rmt, "orange")
     #results from rangemodelR
     plot_rangemodelr(rangemodel, "Kinabalu", cols[1])
     plot_rangemodelr(rangemodel, "Tambuyukon", cols[2])

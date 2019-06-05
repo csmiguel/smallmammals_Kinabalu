@@ -6,3 +6,4 @@ data/intermediate/
 *.DS_Store
 output/
 src/999-recycle.R
+packrat/lib*/

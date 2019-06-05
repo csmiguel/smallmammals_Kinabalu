@@ -18,6 +18,6 @@ plot_bootstrap_endemics <- function(prop_endemics, permutations, y_lab, mt,
   lines(nn, prop_endemics[[mt[i]]], col = cols[i],
     type = "o", pch = c(1, 2)[i], lwd = 2)
   }
-  legend("bottomright", col = cols, lty = 1, pch = 1,
+  legend("bottomright", col = cols, lty = 1, pch = c(1, 2),
   legend = paste("Mt.", mt), bty = "n", lwd = 2)
 }

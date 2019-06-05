@@ -4,19 +4,12 @@
 # https://scholar.google.co.uk/citations?user=1M02-S4AAAAJ&hl=en
 # May 2019
 ###.............................................................................
-#GOAL: Plot species per elevation
-#DESCRIPTION: Create figure of mammal distribution in different altitudes as
+#DESCRIPTION: Plot species per elevation.
+# Create figure of mammal distribution in different altitudes as
 # in Fig 3 Heaney 2011. Compare our data with Nor data.
 #PROJECT: https://github.com/csmiguel/smallmammals_Kinabalu
 ###.............................................................................
-#  REQUIRED FILES:
-#   Description:
-#   Inpath:
-#  OUTPUT:
-#    Description:
-#    Outpath:
-#  DEPENDENCIES:
-###.............................................................................
+
 library(dplyr)
 #read data from Nor 2001:
 input1 <- "data/raw/Nor_data.csv"
@@ -31,6 +24,10 @@ animals <- readRDS(input2) %>%
             dplyr::select(FieldCode, Species, Location, DEM_elevation) %>%
             dplyr::rename(Elevation = DEM_elevation) %>%
             dplyr::as_tibble()
+input3 <- "data/intermediate/endemics.rds"
+endemics <- readRDS(input3)
+
+source("src/parameters/params.r")
 #---------Create combined figure from ours and Nor results------------
 
 # 1. Create combined dataframe for our's and Nor's data
@@ -55,14 +52,11 @@ comb %<>%
       grepl("Tupaia", Species)~"Tupaiidae")
   ) %>% arrange(Group, Species) %>%
   mutate(Species = factor(Species, levels(Species)[#reorder levels
-    match(as.character(unique(Species)), levels(Species))]))
+    match(as.character(unique(Species)), levels(Species))])) %>%
+    mutate(num_sp = 1:nrow(comb))
 
-mutate(num_sp = 1:nrow(comb))
-
-
-#PLOTS
-
-pdf(file = "output/plot_altitude.pdf", width = 11, height = 6)
+#PLOTs
+pdf(file = "output/Figure2_SpeciesDistribution.pdf", width = 11, height = 6)
 par(mar = c(8, 4.5, 2, 1))
 #plot xy limits
 llim <- 200
@@ -85,31 +79,28 @@ for (i in 2:4){
         }
 
 #list to withdraw parameters for lines and points
-h <- list(loc = levels(comb$Location),
-      pchm = c(15, 17, 1),
+h <- list(loc = c(mt, "Nor"),
+      pchm = c(16, 17, 22),
       ptp = c(0, 0.2, -0.2),
-      colp = c("#fec44fA6", "#43a2caA6", "black"))
+      colp = c(cols, "black"))
 #draw points and lines
 for (i in seq_along(levels(comb$Location))){
   #for each location
-  combm <- filter(comb, Location == h[[1]][i])
-  points(as.numeric(combm$Species) + h[[3]][i],
-    combm$Elevation, pch = h[[2]][i],
-    col = h[[4]][i])
+  combm <- filter(comb, Location == h$loc[i])
+  points(as.numeric(combm$Species) + h$ptp[i],
+    combm$Elevation, pch = h$pchm[i],
+    col = h$colp[i])
   #for each species within each location
   for (j in seq_along(levels(combm$Species))){
     an <- filter(combm, Species == levels(combm$Species)[j])
     if (nrow(an) > 0)
-    lines(c(j + h[[3]][i], j + h[[3]][i]),
+    lines(c(j + h$ptp[i], j + h$ptp[i]),
       c(min(an$Elevation), max(an$Elevation)))
     }
   }
 
 #x axis: species labels
-endemics <- c("Melogale everetti", "Chiropodomys pusillus", "Maxomys alticola",
-              "Maxomys ochraceiventer", "Niviventer rapit", "Rattus baluensis",
-              "Suncus hosei", "Sundasciurus everetti", "Sundasciurus jentinki",
-              "Tupaia longipes", "Tupaia montana")
+
 assertthat::assert_that(all(endemics %in% levels(comb$Species)))
   #create vector with font italics and bold italics for endemics
   font_sp <- rep(3, nlevels(comb$Species)) %>%
@@ -133,5 +124,11 @@ for (i in seq_along(levels(comb$Species)) - 1) abline(v = i + 0.5, lty = 3)
 #vegetations levels as in Kitayama 1992
 text(nlevels(comb$Species) - 3, kitayama_elev[2:5] - 100,
   labels = kitayama_name, cex = 0.7)
+legend(x = nlevels(comb$Species) - 8.5,
+       y = 3300,
+       legend = c(paste("Mt.", mt), paste0(h$loc[3], ", 2001")),
+       pch = h$pchm,
+       bg = adjustcolor("white", alpha = 0.5),
+       col = c(cols, "black"))
 
 dev.off()
