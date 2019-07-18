@@ -7,3 +7,4 @@ data/intermediate/
 output/
 src/999-recycle.R
 packrat/lib*/
+etc/
