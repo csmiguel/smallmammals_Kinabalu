@@ -4,7 +4,7 @@
 # https://scholar.google.co.uk/citations?user=1M02-S4AAAAJ&hl=en
 # May 2019
 ###.............................................................................
-#DESCRIPTION: Create figure of mammal distribution in different altitudes as
+#DESCRIPTION: endemicity
 #PROJECT: https://github.com/csmiguel/smallmammals_Kinabalu
 ###.............................................................................
 
@@ -24,7 +24,8 @@ ecol1 <- ecol %>%
   tibble::rownames_to_column() %>%
   dplyr::mutate(elev = as.numeric(gsub("^.*_", "", rowname))) %>%
   dplyr::mutate(location = gsub("_.*$", "", rowname)) %>%
-  dplyr::arrange(location, elev)
+  dplyr::arrange(location, elev) %>%
+  dplyr::select(-"Suncus sp.", -"Crocidura sp")
 
 #1. Bootstrap endemic species within site
 # 1.1. Proportion of endemic species

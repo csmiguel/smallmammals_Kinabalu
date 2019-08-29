@@ -49,7 +49,8 @@ sink()
   #matrix with only endemics
 ecolend <- ecol1[, match(c(endemics, "location", "rowname"), names(ecol1))]
   #matrix with non-endemics
-ecolNend <- ecol1[, -match(endemics, names(ecol1))]
+ecolNend <- ecol1[, -match(endemics, names(ecol1))] %>%
+            dplyr::select(-"Suncus sp.", -"Crocidura sp")
   #list with all ecol matrix
 l <- list(all = ecol1, only_endemics = ecolend, non_endemics = ecolNend)
   #compute pairwise beta diversity between locations for each mountain
@@ -99,7 +100,8 @@ b_Non_end <- seq_along(mt) %>%
   lapply(function(x){
     ecol1 %>% filter(location == mt[x]) %>%
       dplyr::select(-rowname, -location) %>%
-      dplyr::select(-endemics) %>% .[, colSums(.) > 0] %>%
+      dplyr::select(-endemics, -"Suncus sp.", -"Crocidura sp") %>%
+      .[, colSums(.) > 0] %>%
       betapart::beta.multi() %>% unlist() %>% as.data.frame() %>%
       rename(Non_endemics = ".") %>% t()
     })
@@ -112,7 +114,7 @@ b_perm <- seq_along(mt) %>%
   lapply(function(x){
     1:nperm %>% sapply(function(y){
     ecol1 %>% filter(location == mt[x]) %>%
-      dplyr::select(-rowname, -location) %>%
+      dplyr::select(-rowname, -location, -"Suncus sp.", -"Crocidura sp") %>%
       .[, colSums(.) > 0] %>% #removes especies not present in a given mt
       #stores sp as number of species in a given mt and ensp, number of endemics
       #in that given mt.
@@ -121,7 +123,7 @@ b_perm <- seq_along(mt) %>%
       betapart::beta.multi()
     }
   ) %>% apply(1, unlist) %>% {
-    assign(paste0("all_perm", mt[x]),. , envir = .GlobalEnv) ; .} %>%
+    assign(paste0("all_perm", mt[x]), ., envir = .GlobalEnv) ; .} %>%
         #get quantiles
         {quant <<- apply(., 2, quantile, probs = c(0.025, 0.5, 0.975)); .} %>%
         #bind permuted values to values measured withouth Non_endemics

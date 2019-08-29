@@ -38,15 +38,15 @@ comb %<>%
     case_when(
       grepl("Callosciurus", Species)~"Sciuridae",
       grepl("Chiropodomys", Species)~"Muridae",
-      grepl("Crocidura", Species)~"Soricomorpha",
-      grepl("Hylomys", Species)~"Erinaceomorpha",
+      grepl("Crocidura", Species)~"Eulipotyphla",
+      grepl("Hylomys", Species)~"Eulipotyphla",
       grepl("Lenothrix", Species)~"Muridae",
       grepl("Leopoldamys", Species)~"Muridae",
       grepl("Maxomys", Species)~"Muridae",
       grepl("Melogale", Species)~"Carnivora",
       grepl("Niviventer", Species)~"Muridae",
       grepl("Rattus", Species)~"Muridae",
-      grepl("Suncus", Species)~"Soricomorpha",
+      grepl("Suncus", Species)~"Eulipotyphla",
       grepl("Sundamys", Species)~"Muridae",
       grepl("Sundasciurus", Species)~"Sciuridae",
       grepl("Tupaia", Species)~"Tupaiidae")
@@ -124,7 +124,7 @@ for (i in seq_along(levels(comb$Species)) - 1) abline(v = i + 0.5, lty = 3)
 #vegetations levels as in Kitayama 1992
 text(nlevels(comb$Species) - 3, kitayama_elev[2:5] - 100,
   labels = kitayama_name, cex = 0.7)
-legend(x = nlevels(comb$Species) - 8.5,
+legend(x = 9,
        y = 3300,
        legend = c(paste("Mt.", mt), paste0(h$loc[3], ", 2001")),
        pch = h$pchm,
