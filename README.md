@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/185110009.svg)](https://zenodo.org/badge/latestdoi/185110009)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3341178.svg)](https://doi.org/10.5281/zenodo.3341178)
 
 # smallmammals_Kinabalu
 Endemism and diversity of small mammals along two neighboring Bornean mountains.
