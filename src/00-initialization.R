@@ -4,11 +4,14 @@
 # https://scholar.google.co.uk/citations?user=1M02-S4AAAAJ&hl=en
 # May 2019
 ###.............................................................................
-#DESCRIPTION: read data from mysql database and creates an excel formatted file for
-#supplementary file.
+#DESCRIPTION:
+#1. read data from mysql database and creates an excel formatted file for
+# supplementary file.
+#2. create R rds files with raw data for downstream analysis
+#3. create folder structure for repo
 #PROJECT: https://github.com/csmiguel/smallmammals_Kinabalu
 ###.............................................................................
-
+#1. create excel file with raw data
 sf1 <- "data/raw/SF1.xlsx"
 if (!file.exists(sf1)){ #create SF1 if it does not exists
 mydb <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = 'Field', user = 'root',
@@ -45,7 +48,7 @@ xlsx::write.xlsx(traps, file = sf1, row.names = F,
 
 rm(mydb, animals, traps)
 
-#save data as R objects for further use
+#2. save raw data as R objects for further use
   animals <- xlsx::read.xlsx(sf1, sheetIndex = 2)
   animals$TrapID <- as.character(animals$TrapID)
   animals$FieldCode<- as.character(animals$FieldCode)
@@ -62,3 +65,7 @@ endemics <- c("Melogale everetti", "Chiropodomys pusillus", "Maxomys alticola",
               "Sundasciurus everetti", "Sundasciurus jentinki",
               "Tupaia longipes", "Tupaia montana")
 saveRDS(endemics, "data/intermediate/endemics.rds")
+
+#3. create folder structure for repo
+dir.create("output")
+dir.create("data/intermediate")
