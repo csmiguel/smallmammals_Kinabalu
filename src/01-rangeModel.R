@@ -6,7 +6,7 @@
 ###.............................................................................
 #DESCRIPTION: models geometric constraints. As in Wang and Fang 2012
 #PROJECT: https://github.com/csmiguel/smallmammals_Kinabalu
-
+###.............................................................................
 library(dplyr)
 library(rangemodelR)
 
